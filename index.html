@@ -1,319 +1,450 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Monitor Fotovoltaico Casanova</title>
-
-<!-- ICONS -->
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-
-<style>
-body {
-  background: #eef1f5;
-  font-family: system-ui, sans-serif;
-  margin: 0;
-  padding: 10px;
-  color: #1f2933;
-}
-
-/* HAMBURGER */
-#menu-btn {
-  position: fixed;
-  top: 15px;
-  left: 15px;
-  font-size: 32px;
-  cursor: pointer;
-  z-index: 1000;
-  color: #007acc;
-}
-
-/* SIDEBAR */
-#sidebar {
-  position: fixed;
-  top: 0;
-  left: -260px;
-  width: 260px;
-  height: 100%;
-  background: #ffffff;
-  box-shadow: 2px 0 8px rgba(0,0,0,0.2);
-  padding: 20px;
-  transition: left 0.3s ease;
-  z-index: 999;
-}
-
-#sidebar.open {
-  left: 0;
-}
-
-#sidebar h2 {
-  margin-top: 0;
-  font-size: 1.3rem;
-  color: #007acc;
-}
-
-.menu-item {
-  display: flex;
-  align-items: center;
-  padding: 12px 0;
-  font-size: 1rem;
-  cursor: pointer;
-  border-bottom: 1px solid #eee;
-}
-
-.menu-item i {
-  margin-right: 10px;
-  color: #007acc;
-}
-
-/* HEADER */
-h1 {
-  text-align: center;
-  font-size: 1.8rem;
-  margin-bottom: 10px;
-}
-
-/* NOTA */
-#nota {
-  text-align: center;
-  font-size: 0.9rem;
-  color: #444;
-  margin: 10px auto 20px auto;
-  max-width: 650px;
-  padding: 12px;
-  background: #ffffff;
-  border-left: 4px solid #007acc;
-  border-radius: 6px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-/* GRID GAUGE */
-#gauges {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 15px;
-  margin-bottom: 30px;
-}
-
-/* CARD */
-.card {
-  background: #ffffff;
-  padding: 15px;
-  border-radius: 12px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-  text-align: center;
-}
-
-/* GAUGE */
-.gauge {
-  width: 150px;
-  height: 150px;
-  border-radius: 50%;
-  background: conic-gradient(#007acc calc(var(--val) * 1%), #ddd 0);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.1rem;
-  font-weight: 600;
-  margin: 0 auto;
-  transition: background 0.8s ease-in-out;
-}
-
-.gauge-label {
-  font-size: 0.95rem;
-  color: #555;
-  margin-bottom: 8px;
-}
-
-/* CHART CARDS */
-.chart-card {
-  background: #ffffff;
-  padding: 15px;
-  border-radius: 12px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-  margin-bottom: 25px;
-}
-
-.chart-title {
-  display: flex;
-  align-items: center;
-  font-size: 1.1rem;
-  margin-bottom: 10px;
-  color: #333;
-}
-
-.chart-title i {
-  margin-right: 8px;
-  color: #007acc;
-}
-</style>
-</head>
-
-<body>
-
-<!-- HAMBURGER BUTTON -->
-<i id="menu-btn" class="material-icons">menu</i>
-
-<!-- SIDEBAR -->
-<div id="sidebar">
-  <h2>Menu</h2>
-  <div class="menu-item"><i class="material-icons">dashboard</i>Dashboard</div>
-  <div class="menu-item"><i class="material-icons">show_chart</i>Grafici</div>
-  <div class="menu-item"><i class="material-icons">settings</i>Impostazioni</div>
-  <div class="menu-item"><i class="material-icons">info</i>Informazioni</div>
-</div>
-
-<h1>Monitor Fotovoltaico Casanova</h1>
-
-<div id="nota">
-  Corrente, potenza ed energia sono grandezze stimate a partire da Vmp e da un carico equivalente inserito nel codice.
-  Sono valori presunti per uso didattico, non misure reali.
-</div>
-
-<!-- GAUGE GRID -->
-<div id="gauges"></div>
-
-<!-- CHARTS -->
-<div id="charts-box">
-
-  <div class="chart-card">
-    <div class="chart-title"><i class="material-icons">device_thermostat</i>Temperatura</div>
-    <canvas id="chart1"></canvas>
-  </div>
-
-  <div class="chart-card">
-    <div class="chart-title"><i class="material-icons">wb_sunny</i>Irraggiamento</div>
-    <canvas id="chart2"></canvas>
-  </div>
-
-  <div class="chart-card">
-    <div class="chart-title"><i class="material-icons">bolt</i>Voc compensata</div>
-    <canvas id="chart3"></canvas>
-  </div>
-
-  <div class="chart-card">
-    <div class="chart-title"><i class="material-icons">electrical_services</i>Vmp stimata</div>
-    <canvas id="chart4"></canvas>
-  </div>
-
-  <div class="chart-card">
-    <div class="chart-title"><i class="material-icons">speed</i>Corrente stimata</div>
-    <canvas id="chart5"></canvas>
-  </div>
-
-  <div class="chart-card">
-    <div class="chart-title"><i class="material-icons">flash_on</i>Potenza stimata</div>
-    <canvas id="chart6"></canvas>
-  </div>
-
-  <div class="chart-card">
-    <div class="chart-title"><i class="material-icons">energy_savings_leaf</i>Energia stimata</div>
-    <canvas id="chart7"></canvas>
-  </div>
-
-  <div class="chart-card">
-    <div class="chart-title"><i class="material-icons">water_drop</i>Umidità</div>
-    <canvas id="chart8"></canvas>
-  </div>
-
-</div>
-
-<!-- CHART.JS -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<script>
-// MENU
-const menuBtn = document.getElementById("menu-btn");
-const sidebar = document.getElementById("sidebar");
-menuBtn.addEventListener("click", () => sidebar.classList.toggle("open"));
-
-// GAUGE + CHARTS
-const channelID = 3397574;
-
-// GAUGE FIELDS
-const fields = [
-  { id: 1, label: "Temperatura", unit: "°C", max: 60 },
-  { id: 2, label: "Irraggiamento", unit: "W/m²", max: 1200 },
-  { id: 3, label: "Voc", unit: "V", max: 50 },
-  { id: 4, label: "Vmp", unit: "V", max: 40 },
-  { id: 5, label: "Corrente", unit: "A", max: 15 },
-  { id: 6, label: "Potenza", unit: "W", max: 600 },
-  { id: 7, label: "Energia", unit: "Wh", max: 5000 },
-  { id: 8, label: "Umidità", unit: "%", max: 100 }
-];
-
-// BUILD GAUGES
-const gaugeBox = document.getElementById("gauges");
-fields.forEach(f => {
-  gaugeBox.innerHTML += `
-    <div class="card">
-      <div class="gauge-label">${f.label}</div>
-      <div class="gauge" id="g${f.id}" style="--val:0">0</div>
-    </div>`;
-});
-
-// UPDATE GAUGES
-async function aggiornaGauge() {
-  for (let f of fields) {
-    const url = `https://api.thingspeak.com/channels/${channelID}/fields/${f.id}/last.json`;
-    const r = await fetch(url);
-    const j = await r.json();
-    const v = parseFloat(j[`field${f.id}`]);
-
-    const perc = Math.min(100, (v / f.max) * 100);
-    const g = document.getElementById(`g${f.id}`);
-
-    requestAnimationFrame(() => {
-      g.style.setProperty("--val", perc);
-    });
-
-    g.innerHTML = `${v.toFixed(1)} ${f.unit}`;
-  }
-}
-aggiornaGauge();
-setInterval(aggiornaGauge, 20000);
-
-// CHARTS
-async function loadChart(field, canvasID, label, color) {
-  const url = `https://api.thingspeak.com/channels/${channelID}/fields/${field}.json?results=200`;
-  const r = await fetch(url);
-  const j = await r.json();
-
-  const values = j.feeds.map(x => parseFloat(x[`field${field}`]));
-  const times = j.feeds.map(x => x.created_at);
-
-  new Chart(document.getElementById(canvasID), {
-    type: 'line',
-    data: {
-      labels: times,
-      datasets: [{
-        label: label,
-        data: values,
-        borderColor: color,
-        backgroundColor: color + "33",
-        tension: 0.25,
-        borderWidth: 2
-      }]
-    },
-    options: {
-      responsive: true,
-      scales: {
-        x: { display: false },
-        y: { beginAtZero: false }
-      }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Solar PV Monitor - Casanova (Carico Variabile)</title>
+  <!-- Caricamento di Chart.js per i grafici temporali -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f6f7fb;
+      color: #222;
     }
-  });
-}
+    .app {
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 16px 16px 24px 16px;
+    }
+    .app-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .app-title {
+      font-size: 20px;
+      font-weight: 700;
+    }
+    .app-subtitle {
+      font-size: 12px;
+      color: #888;
+    }
+    .badge {
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: #e9f7ef;
+      color: #1e8449;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+    /* Griglia Quadranti / Gauges */
+    .gauges {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-gap: 12px;
+      margin-bottom: 12px;
+    }
+    .gauge-card {
+      background: #ffffff;
+      border-radius: 18px;
+      padding: 10px 10px 14px 10px;
+      box-shadow: 0 8px 18px rgba(0,0,0,0.08);
+    }
+    .gauge-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #999;
+      margin-bottom: 4px;
+      text-align: center;
+    }
+    .gauge-wrap {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .gauge {
+      --value: 0;
+      --bg: #eee;
+      --fg: #667eea;
+      width: 110px;
+      height: 110px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: conic-gradient(var(--fg) calc(var(--value) * 1%), var(--bg) 0);
+      position: relative;
+    }
+    .gauge::before {
+      content: '';
+      position: absolute;
+      inset: 14px;
+      border-radius: 50%;
+      background: #ffffff;
+    }
+    .gauge-inner {
+      position: relative;
+      text-align: center;
+    }
+    .gauge-value {
+      font-size: 22px;
+      font-weight: 700;
+    }
+    .gauge-unit {
+      font-size: 11px;
+      color: #888;
+    }
+    .gauge-minmax {
+      font-size: 9px;
+      color: #bbb;
+      margin-top: 4px;
+    }
+    .gauge-power { --fg: #8e44ad; }
+    .gauge-energy { --fg: #2ecc71; }
+    .gauge-voltage { --fg: #e67e22; }
+    .gauge-vmp { --fg: #d35400; }
+    
+    /* Controllo Carico Slider */
+    .slider-card {
+      background: #ffffff;
+      border-radius: 18px;
+      padding: 14px;
+      box-shadow: 0 8px 18px rgba(0,0,0,0.08);
+      margin-bottom: 12px;
+      border: 1px solid #eef2f5;
+    }
+    .slider-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #444;
+    }
+    .slider-title {
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #777;
+    }
+    .slider-value {
+      color: #d35400;
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .range-input {
+      width: 100%;
+      accent-color: #d35400;
+      margin: 4px 0;
+      cursor: pointer;
+    }
 
-loadChart(1, "chart1", "Temperatura", "#007acc");
-loadChart(2, "chart2", "Irraggiamento", "#ff9900");
-loadChart(3, "chart3", "Voc", "#00aa55");
-loadChart(4, "chart4", "Vmp", "#aa00aa");
-loadChart(5, "chart5", "Corrente", "#0099cc");
-loadChart(6, "chart6", "Potenza", "#cc0000");
-loadChart(7, "chart7", "Energia", "#0055aa");
-loadChart(8, "chart8", "Umidità", "#888888");
-</script>
+    /* Righe Informative e Dettagli */
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 4px 2px 10px 2px;
+      font-size: 12px;
+      color: #555;
+    }
+    .info-label {
+      font-weight: 600;
+      color: #666;
+    }
+    .info-value {
+      font-weight: 700;
+    }
+    .note {
+      font-size: 11px;
+      color: #999;
+      margin-top: 4px;
+      line-height: 1.3;
+      text-align: justify;
+    }
+    .chart-card {
+      background: #ffffff;
+      border-radius: 18px;
+      padding: 12px;
+      box-shadow: 0 8px 18px rgba(0,0,0,0.08);
+      margin-top: 10px;
+    }
+    .chart-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: #666;
+      margin-bottom: 4px;
+    }
+    .chart-box {
+      height: 260px;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    
+    <!-- Header dell'Applicazione -->
+    <div class="app-header">
+      <div>
+        <div class="app-title">Solar PV Monitoring</div>
+        <div class="app-subtitle">Istituto Casanova • Cloud Dashboard</div>
+      </div>
+      <div class="badge" id="wifiBadge">TS CONNECTING</div>
+    </div>
+    
+    <!-- Sezione Controllo Carico Variabile Real-time -->
+    <div class="slider-card">
+      <div class="slider-header">
+        <span class="slider-title">Simulazione Carico Elettrico</span>
+        <span id="rVal" class="slider-value">10.0 Ω</span>
+      </div>
+      <input type="range" id="rSlider" min="1.0" max="50.0" step="0.5" value="10.0" class="range-input">
+      <div style="display: flex; justify-content: space-between; font-size: 9px; color: #bbb; margin-top: 2px;">
+        <span>Min: 1.0 Ω (Carico Alto)</span>
+        <span>Nominale ESP32: 10.0 Ω</span>
+        <span>Max: 50.0 Ω (Carico Basso)</span>
+      </div>
+    </div>
+    
+    <!-- I 4 Quadranti di Monitoraggio Ridisposti (Gauges) -->
+    <div class="gauges">
+      <div class="gauge-card">
+        <div class="gauge-label">Power (simulata)</div>
+        <div class="gauge-wrap">
+          <div class="gauge gauge-power" id="gPower">
+            <div class="gauge-inner">
+              <div class="gauge-value" id="powerVal">--</div>
+              <div class="gauge-unit">W</div>
+              <div class="gauge-minmax">0 – 200 W</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="gauge-card">
+        <div class="gauge-label">Energy (simulata)</div>
+        <div class="gauge-wrap">
+          <div class="gauge gauge-energy" id="gEnergy">
+            <div class="gauge-inner">
+              <div class="gauge-value" id="energyVal">--</div>
+              <div class="gauge-unit">Wh</div>
+              <div class="gauge-minmax">0 – 500 Wh</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="gauge-card">
+        <div class="gauge-label">Voc compensata</div>
+        <div class="gauge-wrap">
+          <div class="gauge gauge-voltage" id="gVoc">
+            <div class="gauge-inner">
+              <div class="gauge-value" id="vocVal">--</div>
+              <div class="gauge-unit">V</div>
+              <div class="gauge-minmax">0 – 25 V</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="gauge-card">
+        <div class="gauge-label">Vmp stimata</div>
+        <div class="gauge-wrap">
+          <div class="gauge gauge-vmp" id="gVmp">
+            <div class="gauge-inner">
+              <div class="gauge-value" id="vmpVal">--</div>
+              <div class="gauge-unit">V</div>
+              <div class="gauge-minmax">0 – 25 V</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
+    <!-- Sezione Dati di Dettaglio Ambientali e Meccanici -->
+    <div class="gauge-card">
+      <div class="info-row"><div class="info-label">Temperatura</div><div class="info-value" id="tempTxt">-- °C</div></div>
+      <div class="info-row"><div class="info-label">Umidità</div><div class="info-value" id="humTxt">-- %</div></div>
+      <div class="info-row"><div class="info-label">Irraggiamento</div><div class="info-value" id="irrTxt">-- %</div></div>
+      <div class="info-row"><div class="info-label">Current (simulata)</div><div class="info-value" id="currTxt">-- A</div></div>
+      <div class="note">Didattica attiva: Muovendo lo slider della resistenza, la pagina ricalcola istantaneamente la corrente, la potenza e l'energia elettrica applicando la legge di Ohm sulla tensione Vmp ricevuta dal cloud. Il grafico storico si adatta dinamicamente per mostrare l'impatto del carico modificato.</div>
+    </div>
+
+    <!-- Sezione Grafico Storico Multilineare -->
+    <div class="chart-card">
+      <div class="chart-title">Andamento Temporale ad Impatto Dinamico (ThingSpeak Feed)</div>
+      <div class="chart-box">
+        <canvas id="powerChart"></canvas>
+      </div>
+    </div>
+
+    <script>
+      // Resistenza fittizia iniziale (coerente con il firmware dell'ESP32)
+      let currentREquiv = 10.0;
+      let globalFeeds = []; // Archivio locale dei feed scaricati per ricalcolo istantaneo
+
+      // Configurazione e logica dei quadranti grafici
+      function setGauge(id, val, min, max) {
+        var el = document.getElementById(id);
+        if (!el) return;
+        if (val === null || isNaN(val)) { el.style.setProperty('--value', 0); return; }
+        var v = Math.max(min, Math.min(max, val));
+        var perc = ((v - min) / (max - min)) * 100;
+        el.style.setProperty('--value', perc);
+      }
+
+      // Inizializzazione vettori storici per le 8 grandezze
+      var powerData = [], energyData = [], vocData = [], vmpData = [], currData = [], tempData = [], humData = [], irrData = [];
+      var chartLabels = [];
+      
+      var ctx = document.getElementById('powerChart').getContext('2d');
+      
+      // Creazione dell'istanza del grafico multilinea Chart.js
+      var powerChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: chartLabels,
+          datasets: [
+            { label: 'Potenza Sim. (W)', data: powerData, borderColor: '#8e44ad', borderWidth: 2, tension: 0.2, fill: false },
+            { label: 'Energia Sim. (Wh)', data: energyData, borderColor: '#2ecc71', borderWidth: 2, tension: 0.2, fill: false },
+            { label: 'Voc (V)', data: vocData, borderColor: '#e67e22', borderWidth: 2, tension: 0.2, fill: false },
+            { label: 'Vmp (V)', data: vmpData, borderColor: '#d35400', borderWidth: 2, tension: 0.2, fill: false },
+            { label: 'Corrente Sim. (A)', data: currData, borderColor: '#1abc9c', borderWidth: 2, tension: 0.2, fill: false },
+            { label: 'Temp (°C)', data: tempData, borderColor: '#e74c3c', borderWidth: 2, tension: 0.2, fill: false },
+            { label: 'Umidità (%)', data: humData, borderColor: '#3498db', borderWidth: 2, tension: 0.2, fill: false },
+            { label: 'Irrag. (%)', data: irrData, borderColor: '#f1c40f', borderWidth: 2, tension: 0.2, fill: false }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: { beginAtZero: true }
+          },
+          plugins: {
+            legend: {
+              display: true,
+              labels: { boxWidth: 8, font: { size: 9 } }
+            }
+          }
+        }
+      });
+
+      // Elaborazione e ricalcolo matematico completo (Gauges + Chart) basato sul carico selezionato
+      function processAndRenderData() {
+        if (!globalFeeds || globalFeeds.length === 0) return;
+
+        // Svuotiamo i vecchi vettori per ripopolarli con le nuove curve proporzionali al carico
+        chartLabels.length = 0; powerData.length = 0; energyData.length = 0; vocData.length = 0;
+        vmpData.length = 0; currData.length = 0; tempData.length = 0; humData.length = 0; irrData.length = 0;
+
+        globalFeeds.forEach(f => {
+          var timeStr = f.created_at ? new Date(f.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : '';
+          chartLabels.push(timeStr);
+          
+          var t = f.field1 ? parseFloat(f.field1) : null;
+          var irr = f.field2 ? parseFloat(f.field2) : null;
+          var voc = f.field3 ? parseFloat(f.field3) : null;
+          var vmp = f.field4 ? parseFloat(f.field4) : null;
+          var tsEnergy = f.field7 ? parseFloat(f.field7) : null;
+          var hum = f.field8 ? parseFloat(f.field8) : null;
+
+          // Ricalcolo basato sulla legge di Ohm in base al carico dinamico scelto dallo studente
+          // Poiché il codice ESP32 calcola internamente su base fissa di 10 Ohm, scaliamo proporzionalmente
+          var simCurr = vmp ? (vmp / currentREquiv) : null;
+          var simPow = vmp ? ((vmp * vmp) / currentREquiv) : null;
+          var simEnergy = tsEnergy ? (tsEnergy * (10.0 / currentREquiv)) : null;
+
+          tempData.push(t);
+          irrData.push(irr);
+          vocData.push(voc);
+          vmpData.push(vmp);
+          currData.push(simCurr);
+          powerData.push(simPow);
+          energyData.push(simEnergy);
+          humData.push(hum);
+        });
+
+        // Aggiorna la veste grafica della linea temporale
+        powerChart.update();
+
+        // Estrazione dell'ultimo punto utile per l'aggiornamento real-time dei quadranti
+        const last = globalFeeds[globalFeeds.length - 1];
+        
+        const lastTemp = last.field1 ? parseFloat(last.field1) : null;
+        const lastIrr = last.field2 ? parseFloat(last.field2) : null;
+        const lastVoc = last.field3 ? parseFloat(last.field3) : null;
+        const lastVmp = last.field4 ? parseFloat(last.field4) : null;
+        const lastTsEnergy = last.field7 ? parseFloat(last.field7) : null;
+        const lastHum = last.field8 ? parseFloat(last.field8) : null;
+
+        // Calcoli istantanei correnti
+        const liveCurr = lastVmp ? (lastVmp / currentREquiv) : null;
+        const livePow = lastVmp ? ((lastVmp * lastVmp) / currentREquiv) : null;
+        const liveEnergy = lastTsEnergy ? (lastTsEnergy * (10.0 / currentREquiv)) : null;
+
+        // Aggiornamento testuale dei quadranti numerici (Nuova disposizione richiesta)
+        document.getElementById('powerVal').textContent = (livePow != null ? livePow.toFixed(1) : '--');
+        document.getElementById('energyVal').textContent = (liveEnergy != null ? liveEnergy.toFixed(1) : '--');
+        document.getElementById('vocVal').textContent = (lastVoc != null ? lastVoc.toFixed(2) : '--');
+        document.getElementById('vmpVal').textContent = (lastVmp != null ? lastVmp.toFixed(2) : '--'); // Affiancato a Voc
+        
+        // Aggiornamento righe testuali di dettaglio (Current spostato qui al posto di Vmp)
+        document.getElementById('tempTxt').textContent = (lastTemp != null ? lastTemp.toFixed(1) + ' °C' : '--');
+        document.getElementById('humTxt').textContent = (lastHum != null ? lastHum.toFixed(1) + ' %' : '--');
+        document.getElementById('irrTxt').textContent = (lastIrr != null ? lastIrr.toFixed(0) + ' %' : '--');
+        document.getElementById('currTxt').textContent = (liveCurr != null ? liveCurr.toFixed(2) + ' A' : '--'); // Spostato qui
+        
+        // Sincronizzazione dinamica dei selettori cerchio gauge grafici
+        setGauge('gPower', livePow, 0, 200);
+        setGauge('gEnergy', liveEnergy, 0, 500);
+        setGauge('gVoc', lastVoc, 0, 25);
+        setGauge('gVmp', lastVmp, 0, 25);
+      }
+
+      // Funzione asincrona che interroga ThingSpeak (Canale: 3397574)
+      async function updateData() {
+        try {
+          const response = await fetch('https://api.thingspeak.com/channels/3397574/feeds.json?results=10');
+          const data = await response.json();
+          
+          if (data.feeds && data.feeds.length > 0) {
+            globalFeeds = data.feeds; // Memorizza la serie storica scaricata dal cloud
+            processAndRenderData();   // Elabora e disegna le metriche
+          }
+          
+          // Aggiorna lo stato del Badge Cloud
+          const wb = document.getElementById('wifiBadge');
+          wb.textContent = 'TS LIVE';
+          wb.style.background = '#e9f7ef';
+          wb.style.color = '#1e8449';
+        } catch (e) {
+          console.error("Errore durante il recupero dei dati da ThingSpeak:", e);
+          const wb = document.getElementById('wifiBadge');
+          wb.textContent = 'TS OFFLINE';
+          wb.style.background = '#fdecea';
+          wb.style.color = '#c0392b';
+        }
+      }
+
+      // Listener per intercettare il movimento dello slider da parte dello studente
+      document.getElementById('rSlider').addEventListener('input', function(e) {
+        currentREquiv = parseFloat(e.target.value);
+        document.getElementById('rVal').textContent = currentREquiv.toFixed(1) + ' Ω';
+        processAndRenderData(); // Ricalcola tutto all'istante senza attendere il refresh del server
+      });
+
+      // Configurazione polling automatico impostato a 15 secondi (15000 ms) come richiesto
+      setInterval(updateData, 15000);
+      
+      // Esecuzione immediata al primo caricamento della pagina web
+      updateData();
+    </script>
+  </div>
 </body>
 </html>
