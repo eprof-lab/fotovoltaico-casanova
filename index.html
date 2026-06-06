@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Solar Monitor - Casanova Pro</title>
+  <title>Solar Monitor - Casanova Ultimate</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     /* RESET E STRUTTURA BASE MOBILE */
@@ -16,7 +16,7 @@
     .app-subtitle { font-size: 10px; color: #65676b; }
     .badge { font-size: 9px; padding: 2px 6px; border-radius: 4px; background: #e7f3ff; color: #1877f2; font-weight: 700; }
 
-    /* GRIGLIA GAUGE PICCOLI */
+    /* GRIGLIA GAUGE COMPATTI */
     .gauges { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 8px; }
     .gauge-card { background: #fff; border-radius: 12px; padding: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); text-align: center; }
     .gauge-label { font-size: 9px; font-weight: 700; text-transform: uppercase; color: #8a8d91; margin-bottom: 6px; }
@@ -33,29 +33,33 @@
     .gauge-value { font-size: 16px; font-weight: 800; display: block; line-height: 1; }
     .gauge-unit { font-size: 9px; color: #65676b; }
     
-    /* COLORI GRANDI CATEGORIE GAUGE */
+    /* COLORI CATEGORIE GAUGE */
     .gauge-power { --fg: #8e44ad; }
     .gauge-energy { --fg: #27ae60; }
     .gauge-voltage { --fg: #e67e22; }
     .gauge-vmp { --fg: #d35400; }
 
-    /* INFO CARD AMBIENTALE */
-    .info-card { background: #fff; border-radius: 12px; padding: 10px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); margin-bottom: 8px; }
-    .info-row { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px; padding-bottom: 4px; border-bottom: 1px solid #f0f2f5; }
-    .info-label { color: #65676b; }
-    .info-value { font-weight: 700; color: #1c1e21; }
+    /* RIQUADRO SEPARATO: METEO E AMBIENTE CON ICONE */
+    .env-card { background: #fff; border-radius: 12px; padding: 10px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); margin-bottom: 8px; }
+    .env-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; text-align: center; }
+    .env-item { background: #f8f9fa; padding: 6px 4px; border-radius: 8px; border: 1px solid #f0f2f5; }
+    .env-icon { font-size: 16px; margin-bottom: 2px; display: block; }
+    .env-label { font-size: 8px; font-weight: 700; text-transform: uppercase; color: #8a8d91; display: block; margin-bottom: 2px; }
+    .env-value { font-size: 11px; font-weight: 700; color: #1c1e21; }
 
-    /* TROVATA GRAFICA: EVICENZA CORRENTE LIVE (AMP-METER) */
-    .current-highlight-box {
-      background: #e8f8f5;
-      border: 1px solid #a3e4d7;
-      border-radius: 8px;
-      padding: 6px 10px;
-      margin-top: 8px;
-    }
+    /* SLIDER CARD */
+    .slider-card { background: #fff; border-radius: 12px; padding: 8px 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); margin-bottom: 8px; border: 1px dashed #d35400; }
+    .slider-header { display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 4px; font-weight: 600; }
+    .slider-value { color: #d35400; font-weight: 700; }
+    .range-input { width: 100%; accent-color: #d35400; height: 4px; margin: 4px 0; cursor: pointer; }
+    .note { font-size: 9px; color: #8a8d91; line-height: 1.2; text-align: center; font-style: italic; margin-top: 2px; }
+
+    /* RIQUADRO SEPARATO: CORRENTE LIVE (AMP-METER) */
+    .current-card { background: #fff; border-radius: 12px; padding: 10px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); margin-bottom: 8px; border-left: 4px solid #117a65; }
+    .current-highlight-box { background: #e8f8f5; border: 1px solid #a3e4d7; border-radius: 8px; padding: 8px 10px; }
     .current-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
     .current-title { font-size: 10px; font-weight: 700; color: #16a085; text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; }
-    .current-value { font-size: 15px; font-weight: 800; color: #117a65; }
+    .current-value { font-size: 16px; font-weight: 800; color: #117a65; }
     .current-bar-bg { width: 100%; height: 6px; background: #d1f2eb; border-radius: 3px; overflow: hidden; }
     .current-bar-fill { width: 0%; height: 100%; background: linear-gradient(90deg, #1abc9c, #117a65); transition: width 0.15s ease; }
     
@@ -67,16 +71,9 @@
       100% { transform: scale(0.9); opacity: 0.6; box-shadow: 0 0 0 0 rgba(26,188,156,0); }
     }
 
-    /* SLIDER CARD (POSIZIONATA SOPRA IL GRAFICO) */
-    .slider-card { background: #fff; border-radius: 12px; padding: 8px 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); margin-bottom: 8px; border: 1px dashed #d35400; }
-    .slider-header { display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 4px; font-weight: 600; }
-    .slider-value { color: #d35400; font-weight: 700; }
-    .range-input { width: 100%; accent-color: #d35400; height: 4px; margin: 4px 0; cursor: pointer; }
-    .note { font-size: 9px; color: #8a8d91; line-height: 1.2; margin-top: 4px; text-align: center; font-style: italic; }
-
     /* GRAFICO */
     .chart-card { background: #fff; border-radius: 12px; padding: 10px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
-    .chart-box { height: 170px; }
+    .chart-box { height: 180px; }
   </style>
 </head>
 <body>
@@ -86,7 +83,7 @@
     <div class="app-header">
       <div>
         <h1 class="app-title">PV Monitoring</h1>
-        <div class="app-subtitle">Ist. Casanova • Mobile View</div>
+        <div class="app-subtitle">Ist. Casanova • Mobile Edition</div>
       </div>
       <div class="badge" id="wifiBadge">TS CONNECTING</div>
     </div>
@@ -119,13 +116,39 @@
       </div>
     </div>
 
-    <!-- SCHEDA INFORMATIVA + WIDGET CORRENTE -->
-    <div class="info-card">
-      <div class="info-row"><span>Temperatura</span><span class="info-value" id="tempTxt">-- °C</span></div>
-      <div class="info-row"><span>Umidità</span><span class="info-value" id="humTxt">-- %</span></div>
-      <div class="info-row"><span>Irraggiamento</span><span class="info-value" id="irrTxt">-- %</span></div>
-      
-      <!-- TROVATA GRAFICA PER LA CORRENTE -->
+    <!-- RIQUADRO AMBIENTE E METEO CON ICONE -->
+    <div class="env-card">
+      <div class="env-grid">
+        <div class="env-item">
+          <span class="env-icon">🌡️</span>
+          <span class="env-label">Temp</span>
+          <span id="tempTxt" class="env-value">-- °C</span>
+        </div>
+        <div class="env-item">
+          <span class="env-icon">💧</span>
+          <span class="env-label">Umidità</span>
+          <span id="humTxt" class="env-value">-- %</span>
+        </div>
+        <div class="env-item">
+          <span class="env-icon">☀️</span>
+          <span class="env-label">Irragg.</span>
+          <span id="irrTxt" class="env-value">-- %</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDER CARICO VARIABILE -->
+    <div class="slider-card">
+      <div class="slider-header">
+        <span>Regolazione Carico Resistivo</span>
+        <span id="rVal" class="slider-value">10.0 Ω</span>
+      </div>
+      <input type="range" id="rSlider" min="1.0" max="50.0" step="0.5" value="10.0" class="range-input">
+      <div class="note">Modificando la resistenza variano istantaneamente i dati storici e correnti.</div>
+    </div>
+
+    <!-- RIQUADRO CORRENTE LIVE (SPOSTATO SOTTO LO SLIDER) -->
+    <div class="current-card">
       <div class="current-highlight-box">
         <div class="current-header">
           <span class="current-title"><span class="pulse-dot"></span>Corrente Simulata</span>
@@ -137,17 +160,7 @@
       </div>
     </div>
 
-    <!-- SLIDER CARICO VARIABILE (SPOSTATO QUI: IMMEDIATAMENTE SOPRA IL GRAFICO) -->
-    <div class="slider-card">
-      <div class="slider-header">
-        <span>Regolazione Carico Resistivo</span>
-        <span id="rVal" class="slider-value">10.0 Ω</span>
-      </div>
-      <input type="range" id="rSlider" min="1.0" max="50.0" step="0.5" value="10.0" class="range-input">
-      <div class="note">Modificando la resistenza variano istantaneamente Corrente, Potenza e Grafico storico.</div>
-    </div>
-
-    <!-- GRAFICO MULTILINEA -->
+    <!-- GRAFICO COMPLETO -->
     <div class="chart-card">
       <div class="chart-box"><canvas id="powerChart"></canvas></div>
     </div>
@@ -164,34 +177,59 @@
         el.style.setProperty('--value', perc);
       }
 
+      // Configurazione del grafico
       let ctx = document.getElementById('powerChart').getContext('2d');
       let powerChart = new Chart(ctx, {
         type: 'line',
         data: { labels: [], datasets: [
-          { label: 'W', data: [], borderColor: '#8e44ad', borderWidth: 1.5, tension: 0.3, pointRadius: 0 },
-          { label: 'Vmp', data: [], borderColor: '#d35400', borderWidth: 1.5, tension: 0.3, pointRadius: 0 },
-          { label: 'A', data: [], borderColor: '#1abc9c', borderWidth: 1.5, tension: 0.3, pointRadius: 0 }
+          { label: 'Potenza (W)', data: [], borderColor: '#8e44ad', borderWidth: 1.5, tension: 0.2, pointRadius: 0, yAxisID: 'y' },
+          { label: 'Vmp (V)', data: [], borderColor: '#d35400', borderWidth: 1.5, tension: 0.2, pointRadius: 0, yAxisID: 'y' },
+          { label: 'Voc (V)', data: [], borderColor: '#e67e22', borderWidth: 1.2, borderDash: [2, 2], tension: 0.2, pointRadius: 0, yAxisID: 'y' },
+          { label: 'Corrente (A)', data: [], borderColor: '#1abc9c', borderWidth: 1.5, tension: 0.2, pointRadius: 0, yAxisID: 'yI' },
+          { label: 'Irragg. (%)', data: [], borderColor: '#f1c40f', borderWidth: 1, borderDash: [3, 3], tension: 0.2, pointRadius: 0, yAxisID: 'yEnv' },
+          { label: 'Temp (°C)', data: [], borderColor: '#e74c3c', borderWidth: 1, tension: 0.2, pointRadius: 0, yAxisID: 'yEnv' }
         ]},
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { boxWidth: 6, font: { size: 8 } } } }, scales: { x: { display: false }, y: { ticks: { font: { size: 8 } } } } }
+        options: { 
+          responsive: true, 
+          maintainAspectRatio: false, 
+          plugins: { legend: { labels: { boxWidth: 6, font: { size: 7.5 } } } }, 
+          scales: { 
+            x: { display: false }, 
+            y: { position: 'left', ticks: { font: { size: 8 } }, title: { display: false } },
+            yI: { position: 'right', grid: { drawOnChartArea: false }, ticks: { font: { size: 8 } } },
+            yEnv: { display: false }
+          } 
+        }
       });
 
       function processAndRenderData() {
         if (!globalFeeds.length) return;
-        let labels = [], pArr = [], vmpArr = [], cArr = [];
+        let labels = [], pArr = [], vmpArr = [], vocArr = [], cArr = [], irrArr = [], tArr = [];
 
         globalFeeds.forEach(f => {
           let timeStr = new Date(f.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
           let vmp = parseFloat(f.field4) || 0;
+          let voc = parseFloat(f.field3) || 0;
+          let irr = parseFloat(f.field2) || 0;
+          let temp = parseFloat(f.field1) || 0;
+          
           labels.push(timeStr);
           vmpArr.push(vmp);
+          vocArr.push(voc);
           pArr.push((vmp * vmp) / currentREquiv);
           cArr.push(vmp / currentREquiv);
+          irrArr.push(irr);
+          tArr.push(temp);
         });
 
+        // Caricamento simultaneo di tutte le grandezze nel grafico
         powerChart.data.labels = labels;
         powerChart.data.datasets[0].data = pArr;
         powerChart.data.datasets[1].data = vmpArr;
-        powerChart.data.datasets[2].data = cArr;
+        powerChart.data.datasets[2].data = vocArr;
+        powerChart.data.datasets[3].data = cArr;
+        powerChart.data.datasets[4].data = irrArr;
+        powerChart.data.datasets[5].data = tArr;
         powerChart.update('none');
 
         const last = globalFeeds[globalFeeds.length - 1];
@@ -201,18 +239,18 @@
         
         const calculatedAmp = vmp / currentREquiv;
         
-        // Aggiornamento Valori dell'ultimo record
+        // Quadranti Gauge
         document.getElementById('powerVal').textContent = ((vmp * vmp) / currentREquiv).toFixed(1);
         document.getElementById('energyVal').textContent = (tsE * (10.0 / currentREquiv)).toFixed(1);
         document.getElementById('vocVal').textContent = voc.toFixed(1);
         document.getElementById('vmpVal').textContent = vmp.toFixed(1);
         
-        // Aggiornamento Widget Corrente (Testo + Barra Fluida con fondo scala 20A)
+        // Riquadro della Corrente
         document.getElementById('currTxt').textContent = calculatedAmp.toFixed(2) + " A";
         let barWidthPercent = Math.min(100, (calculatedAmp / 20.0) * 100);
         document.getElementById('currBar').style.width = barWidthPercent + "%";
         
-        // Altre info ambientali
+        // Riquadro Ambiente con Icone Grafiche
         document.getElementById('tempTxt').textContent = (parseFloat(last.field1) || 0).toFixed(1) + " °C";
         document.getElementById('humTxt').textContent = (parseFloat(last.field8) || 0).toFixed(0) + " %";
         document.getElementById('irrTxt').textContent = (parseFloat(last.field2) || 0).toFixed(0) + " %";
