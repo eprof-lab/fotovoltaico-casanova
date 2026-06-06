@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<title>Monitor Fotovoltaico Casanova</title>
+<style>
+body {
+  background: #f4f6f9;
+  font-family: system-ui, sans-serif;
+  margin: 0;
+  padding: 20px;
+  text-align: center;
+  color: #1f2933;
+}
+
+h1 {
+  font-size: 1.8rem;
+  margin-bottom: 20px;
+}
+
+.gauge {
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  background: conic-gradient(#007acc calc(var(--val) * 1%), #ddd 0);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #1f2933;
+  margin: 10px auto;
+}
+
+.gauge-label {
+  text-align: center;
+  font-size: 0.9rem;
+  color: #6b7280;
+  margin-bottom: 4px;
+}
+
+.gauge-container {
+  display: inline-block;
+  width: 180px;
+  margin: 10px;
+}
+</style>
+</head>
+
+<body>
+
+<h1>Monitor Fotovoltaico Casanova</h1>
+
+<div id="gauges"></div>
+
+<script>
+const channel = 3397574;
+
+const fields = [
+  {id:1, label:"Temperatura", unit:"°C", max:60},
+  {id:2, label:"Irraggiamento", unit:"W/m²", max:1200},
+  {id:3, label:"Voc compensata", unit:"V", max:60},
+  {id:4, label:"Vmp stimata", unit:"V", max:50},
+  {id:5, label:"Corrente stimata", unit:"A", max:15},
+  {id:6, label:"Potenza stimata", unit:"W", max:500},
+  {id:7, label:"Energia stimata", unit:"Wh", max:2000},
+  {id:8, label:"Umidità", unit:"%", max:100}
+];
+
+function creaGaugeHTML() {
+  let html = "";
+  fields.forEach(f => {
+    html += `
+      <div class="gauge-container">
+        <div class="gauge-label">${f.label}</div>
+        <div id="g${f.id}" class="gauge" style="--val:0;">0 ${f.unit}</div>
+      </div>
+    `;
+  });
+  document.getElementById("gauges").innerHTML = html;
+}
+
+async function aggiornaGauge() {
+  for (const f of fields) {
+    const url = `https://api.thingspeak.com/channels/${channel}/fields/${f.id}/last.json`;
+    const r = await fetch(url);
+    const j = await r.json();
+    const v = parseFloat(j[`field${f.id}`]);
+
+    const perc = Math.min(100, (v / f.max) * 100);
+    const g = document.getElementById(`g${f.id}`);
+
+    g.style.setProperty("--val", perc);
+    g.innerHTML = `${v.toFixed(1)} ${f.unit}`;
+  }
+}
+
+creaGaugeHTML();
+aggiornaGauge();
+setInterval(aggiornaGauge, 20000);
+</script>
+
+</body>
+</html>
