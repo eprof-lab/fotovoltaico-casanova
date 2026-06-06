@@ -2,87 +2,260 @@
 <html lang="it">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Monitor Fotovoltaico Casanova</title>
+
+<!-- ICONS -->
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
 <style>
 body {
-  background: #f4f6f9;
+  background: #eef1f5;
   font-family: system-ui, sans-serif;
   margin: 0;
-  padding: 20px;
-  text-align: center;
+  padding: 10px;
   color: #1f2933;
 }
 
-h1 {
-  font-size: 1.8rem;
-  margin-bottom: 20px;
+/* HAMBURGER */
+#menu-btn {
+  position: fixed;
+  top: 15px;
+  left: 15px;
+  font-size: 32px;
+  cursor: pointer;
+  z-index: 1000;
+  color: #007acc;
 }
 
+/* SIDEBAR */
+#sidebar {
+  position: fixed;
+  top: 0;
+  left: -260px;
+  width: 260px;
+  height: 100%;
+  background: #ffffff;
+  box-shadow: 2px 0 8px rgba(0,0,0,0.2);
+  padding: 20px;
+  transition: left 0.3s ease;
+  z-index: 999;
+}
+
+#sidebar.open {
+  left: 0;
+}
+
+#sidebar h2 {
+  margin-top: 0;
+  font-size: 1.3rem;
+  color: #007acc;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 0;
+  font-size: 1rem;
+  cursor: pointer;
+  border-bottom: 1px solid #eee;
+}
+
+.menu-item i {
+  margin-right: 10px;
+  color: #007acc;
+}
+
+/* HEADER */
+h1 {
+  text-align: center;
+  font-size: 1.8rem;
+  margin-bottom: 10px;
+}
+
+/* NOTA */
+#nota {
+  text-align: center;
+  font-size: 0.9rem;
+  color: #444;
+  margin: 10px auto 20px auto;
+  max-width: 650px;
+  padding: 12px;
+  background: #ffffff;
+  border-left: 4px solid #007acc;
+  border-radius: 6px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* GRID GAUGE */
+#gauges {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 15px;
+  margin-bottom: 30px;
+}
+
+/* CARD */
+.card {
+  background: #ffffff;
+  padding: 15px;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  text-align: center;
+}
+
+/* GAUGE */
 .gauge {
-  width: 160px;
-  height: 160px;
+  width: 150px;
+  height: 150px;
   border-radius: 50%;
   background: conic-gradient(#007acc calc(var(--val) * 1%), #ddd 0);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   font-weight: 600;
-  color: #1f2933;
-  margin: 10px auto;
+  margin: 0 auto;
+  transition: background 0.8s ease-in-out;
 }
 
 .gauge-label {
-  text-align: center;
-  font-size: 0.9rem;
-  color: #6b7280;
-  margin-bottom: 4px;
+  font-size: 0.95rem;
+  color: #555;
+  margin-bottom: 8px;
 }
 
-.gauge-container {
-  display: inline-block;
-  width: 180px;
-  margin: 10px;
+/* CHART CARDS */
+.chart-card {
+  background: #ffffff;
+  padding: 15px;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  margin-bottom: 25px;
+}
+
+.chart-title {
+  display: flex;
+  align-items: center;
+  font-size: 1.1rem;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.chart-title i {
+  margin-right: 8px;
+  color: #007acc;
 }
 </style>
 </head>
 
 <body>
 
+<!-- HAMBURGER BUTTON -->
+<i id="menu-btn" class="material-icons">menu</i>
+
+<!-- SIDEBAR -->
+<div id="sidebar">
+  <h2>Menu</h2>
+  <div class="menu-item"><i class="material-icons">dashboard</i>Dashboard</div>
+  <div class="menu-item"><i class="material-icons">show_chart</i>Grafici</div>
+  <div class="menu-item"><i class="material-icons">settings</i>Impostazioni</div>
+  <div class="menu-item"><i class="material-icons">info</i>Informazioni</div>
+</div>
+
 <h1>Monitor Fotovoltaico Casanova</h1>
 
+<div id="nota">
+  Corrente, potenza ed energia sono grandezze stimate a partire da Vmp e da un carico equivalente inserito nel codice.
+  Sono valori presunti per uso didattico, non misure reali.
+</div>
+
+<!-- GAUGE GRID -->
 <div id="gauges"></div>
 
-<script>
-const channel = 3397574;
+<!-- CHARTS -->
+<div id="charts-box">
 
+  <div class="chart-card">
+    <div class="chart-title"><i class="material-icons">device_thermostat</i>Temperatura</div>
+    <canvas id="chart1"></canvas>
+  </div>
+
+  <div class="chart-card">
+    <div class="chart-title"><i class="material-icons">wb_sunny</i>Irraggiamento</div>
+    <canvas id="chart2"></canvas>
+  </div>
+
+  <div class="chart-card">
+    <div class="chart-title"><i class="material-icons">bolt</i>Voc compensata</div>
+    <canvas id="chart3"></canvas>
+  </div>
+
+  <div class="chart-card">
+    <div class="chart-title"><i class="material-icons">electrical_services</i>Vmp stimata</div>
+    <canvas id="chart4"></canvas>
+  </div>
+
+  <div class="chart-card">
+    <div class="chart-title"><i class="material-icons">speed</i>Corrente stimata</div>
+    <canvas id="chart5"></canvas>
+  </div>
+
+  <div class="chart-card">
+    <div class="chart-title"><i class="material-icons">flash_on</i>Potenza stimata</div>
+    <canvas id="chart6"></canvas>
+  </div>
+
+  <div class="chart-card">
+    <div class="chart-title"><i class="material-icons">energy_savings_leaf</i>Energia stimata</div>
+    <canvas id="chart7"></canvas>
+  </div>
+
+  <div class="chart-card">
+    <div class="chart-title"><i class="material-icons">water_drop</i>Umidità</div>
+    <canvas id="chart8"></canvas>
+  </div>
+
+</div>
+
+<!-- CHART.JS -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+// MENU
+const menuBtn = document.getElementById("menu-btn");
+const sidebar = document.getElementById("sidebar");
+menuBtn.addEventListener("click", () => sidebar.classList.toggle("open"));
+
+// GAUGE + CHARTS
+const channelID = 3397574;
+
+// GAUGE FIELDS
 const fields = [
-  {id:1, label:"Temperatura", unit:"°C", max:60},
-  {id:2, label:"Irraggiamento", unit:"W/m²", max:1200},
-  {id:3, label:"Voc compensata", unit:"V", max:60},
-  {id:4, label:"Vmp stimata", unit:"V", max:50},
-  {id:5, label:"Corrente stimata", unit:"A", max:15},
-  {id:6, label:"Potenza stimata", unit:"W", max:500},
-  {id:7, label:"Energia stimata", unit:"Wh", max:2000},
-  {id:8, label:"Umidità", unit:"%", max:100}
+  { id: 1, label: "Temperatura", unit: "°C", max: 60 },
+  { id: 2, label: "Irraggiamento", unit: "W/m²", max: 1200 },
+  { id: 3, label: "Voc", unit: "V", max: 50 },
+  { id: 4, label: "Vmp", unit: "V", max: 40 },
+  { id: 5, label: "Corrente", unit: "A", max: 15 },
+  { id: 6, label: "Potenza", unit: "W", max: 600 },
+  { id: 7, label: "Energia", unit: "Wh", max: 5000 },
+  { id: 8, label: "Umidità", unit: "%", max: 100 }
 ];
 
-function creaGaugeHTML() {
-  let html = "";
-  fields.forEach(f => {
-    html += `
-      <div class="gauge-container">
-        <div class="gauge-label">${f.label}</div>
-        <div id="g${f.id}" class="gauge" style="--val:0;">0 ${f.unit}</div>
-      </div>
-    `;
-  });
-  document.getElementById("gauges").innerHTML = html;
-}
+// BUILD GAUGES
+const gaugeBox = document.getElementById("gauges");
+fields.forEach(f => {
+  gaugeBox.innerHTML += `
+    <div class="card">
+      <div class="gauge-label">${f.label}</div>
+      <div class="gauge" id="g${f.id}" style="--val:0">0</div>
+    </div>`;
+});
 
+// UPDATE GAUGES
 async function aggiornaGauge() {
-  for (const f of fields) {
-    const url = `https://api.thingspeak.com/channels/${channel}/fields/${f.id}/last.json`;
+  for (let f of fields) {
+    const url = `https://api.thingspeak.com/channels/${channelID}/fields/${f.id}/last.json`;
     const r = await fetch(url);
     const j = await r.json();
     const v = parseFloat(j[`field${f.id}`]);
@@ -90,14 +263,56 @@ async function aggiornaGauge() {
     const perc = Math.min(100, (v / f.max) * 100);
     const g = document.getElementById(`g${f.id}`);
 
-    g.style.setProperty("--val", perc);
+    requestAnimationFrame(() => {
+      g.style.setProperty("--val", perc);
+    });
+
     g.innerHTML = `${v.toFixed(1)} ${f.unit}`;
   }
 }
-
-creaGaugeHTML();
 aggiornaGauge();
 setInterval(aggiornaGauge, 20000);
+
+// CHARTS
+async function loadChart(field, canvasID, label, color) {
+  const url = `https://api.thingspeak.com/channels/${channelID}/fields/${field}.json?results=200`;
+  const r = await fetch(url);
+  const j = await r.json();
+
+  const values = j.feeds.map(x => parseFloat(x[`field${field}`]));
+  const times = j.feeds.map(x => x.created_at);
+
+  new Chart(document.getElementById(canvasID), {
+    type: 'line',
+    data: {
+      labels: times,
+      datasets: [{
+        label: label,
+        data: values,
+        borderColor: color,
+        backgroundColor: color + "33",
+        tension: 0.25,
+        borderWidth: 2
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        x: { display: false },
+        y: { beginAtZero: false }
+      }
+    }
+  });
+}
+
+loadChart(1, "chart1", "Temperatura", "#007acc");
+loadChart(2, "chart2", "Irraggiamento", "#ff9900");
+loadChart(3, "chart3", "Voc", "#00aa55");
+loadChart(4, "chart4", "Vmp", "#aa00aa");
+loadChart(5, "chart5", "Corrente", "#0099cc");
+loadChart(6, "chart6", "Potenza", "#cc0000");
+loadChart(7, "chart7", "Energia", "#0055aa");
+loadChart(8, "chart8", "Umidità", "#888888");
 </script>
 
 </body>
