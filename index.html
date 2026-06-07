@@ -143,7 +143,7 @@
         <span>Regolazione Carico Resistivo</span>
         <span id="rVal" class="slider-value">10.0 Ω</span>
       </div>
-      <input type="range" id="rSlider" min="1.0" max="50.0" step="0.5" value="10.0" class="range-input">
+      <input type="range" id="rSlider" min="5.0" max="50.0" step="1.0" value="10.0" class="range-input">
       <div class="note">Modificando la resistenza variano istantaneamente i dati storici e correnti.</div>
     </div>
 
@@ -281,7 +281,7 @@
         processAndRenderData();
       });
 
-      setInterval(updateData, 15000);
+      setInterval(updateData, 5000);
       updateData();
     </script>
   </div>
