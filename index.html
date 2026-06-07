@@ -8,13 +8,121 @@
   <style>
     /* RESET E STRUTTURA BASE MOBILE */
     body { margin: 0; font-family: -apple-system, system-ui, sans-serif; background: #f0f2f5; color: #1c1e21; }
-    .app { max-width: 420px; margin: 0 auto; padding: 8px; }
+    .app { max-width: 420px; margin: 0 auto; padding: 8px; position: relative; }
 
-    /* HEADER COMPATTO */
+    /* HEADER COMPATTO CON HAMBURGER MENU */
     .app-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; padding: 0 4px; }
+    .header-left { display: flex; align-items: center; gap: 12px; } /* Sposta il titolo a destra ed evita sovrapposizioni */
+    
+    .menu-btn { 
+      background: none; 
+      border: none; 
+      font-size: 22px; 
+      cursor: pointer; 
+      padding: 4px; 
+      color: #1c1e21; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center;
+    }
+    
     .app-title { font-size: 16px; font-weight: 800; margin: 0; }
     .app-subtitle { font-size: 10px; color: #65676b; }
     .badge { font-size: 9px; padding: 2px 6px; border-radius: 4px; background: #e7f3ff; color: #1877f2; font-weight: 700; }
+
+    /* MENU SIDEBAR A SCOMPARSA (DRAWER) */
+    .menu-backdrop { 
+      position: fixed; 
+      top: 0; 
+      left: 0; 
+      width: 100vw; 
+      height: 100vh; 
+      background: rgba(0, 0, 0, 0.4); 
+      z-index: 2999; 
+      display: none; 
+    }
+    .menu-backdrop.open { display: block; }
+
+    .side-menu { 
+      position: fixed; 
+      top: 0; 
+      left: -320px; 
+      width: 320px; 
+      height: 100%; 
+      background: #fff; 
+      box-shadow: 4px 0 12px rgba(0,0,0,0.15); 
+      z-index: 3000; 
+      transition: left 0.3s ease; 
+      display: flex; 
+      flex-direction: column; 
+      box-sizing: border-box; 
+    }
+    .side-menu.open { left: 0; }
+
+    .menu-close-header { 
+      display: flex; 
+      justify-content: flex-end; 
+      padding: 10px 10px 4px 10px; 
+    }
+    .menu-close-btn { 
+      background: none; 
+      border: none; 
+      font-size: 22px; 
+      cursor: pointer; 
+      color: #65676b; 
+    }
+
+    /* HUB DIDATTICO DENTRO IL MENU (CARATTERI INGRANDITI) */
+    .edu-container { 
+      padding: 0 15px 20px 15px; 
+      overflow-y: auto; 
+      flex: 1; 
+    }
+    .edu-header { 
+      font-size: 14px; 
+      font-weight: 800; 
+      color: #1877f2; 
+      text-transform: uppercase; 
+      margin-bottom: 12px; 
+      letter-spacing: 0.03em; 
+    }
+    .edu-item { 
+      border: 1px solid #e4e6eb; 
+      border-radius: 8px; 
+      margin-bottom: 8px; 
+      overflow: hidden; 
+      background: #f8f9fa; 
+    }
+    .edu-item[open] { background: #fff; border-color: #bcd4f5; }
+    
+    /* Font più grandi e leggibili per i riquadri */
+    .edu-summary { 
+      font-size: 12.5px; 
+      font-weight: 700; 
+      padding: 10px 12px; 
+      color: #1c1e21; 
+      cursor: pointer; 
+      user-select: none; 
+      list-style: none; 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center; 
+    }
+    .edu-item[open] .edu-summary { background: #e7f3ff; color: #1877f2; border-bottom: 1px solid #bcd4f5; }
+    .edu-summary::after { content: '▼'; font-size: 9px; color: #8a8d91; transition: transform 0.2s; }
+    .edu-item[open] .edu-summary::after { transform: rotate(180deg); color: #1877f2; }
+    
+    /* Contenuti ingranditi per lettura agevole da smartphone */
+    .edu-content { padding: 12px; font-size: 12px; color: #4e5156; line-height: 1.5; }
+    .edu-content p { margin: 0 0 8px 0; }
+    .edu-content p:last-child { margin-bottom: 0; }
+    .edu-content ul { margin: 6px 0; padding-left: 18px; }
+    .edu-content li { margin-bottom: 6px; }
+    
+    .formula { font-family: 'Times New Roman', serif; font-style: italic; font-weight: bold; color: #d35400; background: #fdf2e9; padding: 2px 5px; border-radius: 4px; font-size: 12px; }
+    .safe-box { background: #fdf2f2; border-left: 3px solid #e74c3c; padding: 8px 10px; border-radius: 0 6px 6px 0; margin-top: 6px; }
+    .link-ts { color: #1877f2; text-decoration: none; font-weight: 600; word-break: break-all; }
+    .link-ts:hover { text-decoration: underline; }
 
     /* GRIGLIA GAUGE COMPATTI */
     .gauges { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 8px; }
@@ -72,37 +180,79 @@
     }
 
     /* GRAFICO */
-    .chart-card { background: #fff; border-radius: 12px; padding: 10px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); margin-bottom: 8px; }
+    .chart-card { background: #fff; border-radius: 12px; padding: 10px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
     .chart-box { height: 180px; }
-
-    /* HUB DIDATTICO (MENU A SCOMPARSA ACCORDION) */
-    .edu-card { background: #fff; border-radius: 12px; padding: 10px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); margin-bottom: 8px; border-top: 4px solid #1877f2; }
-    .edu-header { font-size: 12px; font-weight: 800; color: #1877f2; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.03em; display: flex; align-items: center; gap: 4px; }
-    .edu-item { border: 1px solid #e4e6eb; border-radius: 8px; margin-bottom: 6px; overflow: hidden; background: #f8f9fa; }
-    .edu-item[open] { background: #fff; border-color: #bcd4f5; }
-    .edu-summary { font-size: 11px; font-weight: 700; padding: 8px 10px; color: #1c1e21; cursor: pointer; user-select: none; list-style: none; display: flex; justify-content: space-between; align-items: center; }
-    .edu-item[open] .edu-summary { background: #e7f3ff; color: #1877f2; border-bottom: 1px solid #bcd4f5; }
-    .edu-summary::after { content: '▼'; font-size: 8px; color: #8a8d91; transition: transform 0.2s; }
-    .edu-item[open] .edu-summary::after { transform: rotate(180deg); color: #1877f2; }
-    .edu-content { padding: 10px; font-size: 10.5px; color: #4e5156; line-height: 1.4; }
-    .edu-content p { margin: 0 0 6px 0; }
-    .edu-content p:last-child { margin-bottom: 0; }
-    .edu-content ul { margin: 4px 0; padding-left: 16px; }
-    .edu-content li { margin-bottom: 4px; }
-    .formula { font-family: 'Times New Roman', serif; font-style: italic; font-weight: bold; color: #d35400; background: #fdf2e9; padding: 1px 4px; border-radius: 4px; font-size: 10.5px; }
-    .safe-box { background: #fdf2f2; border-left: 3px solid #e74c3c; padding: 6px 8px; border-radius: 0 6px 6px 0; margin-top: 4px; }
-    .link-ts { color: #1877f2; text-decoration: none; font-weight: 600; word-break: break-all; }
-    .link-ts:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
+
+  <!-- BACKDROP OSCURANTE PER IL MENU -->
+  <div class="menu-backdrop" id="menuBackdrop"></div>
+
+  <!-- MENU LATERALE A SCOMPARSA (DRAWER) -->
+  <div class="side-menu" id="sideMenu">
+    <div class="menu-close-header">
+      <button class="menu-close-btn" id="closeMenuBtn">✕</button>
+    </div>
+    
+    <div class="edu-container">
+      <div class="edu-header">📘 Hub Didattico & Teoria</div>
+      
+      <details class="edu-item">
+        <summary class="edu-summary">📊 Grandezze & Formule</summary>
+        <div class="edu-content">
+          <ul>
+            <li><strong>Temp e Umidità:</strong> Letti dal sensore DHT11. <em>Nel reale:</em> Se i moduli fotovoltaici si scaldano, la loro efficienza in tensione si riduce.</li>
+            <li><strong>Irraggiamento:</strong> Rilevato da fotoresistenza LDR (0-100%). <em>Nel reale:</em> L'intensità della luce solare determina la corrente prodotta.</li>
+            <li><strong>Voc (Tensione a vuoto):</strong> Massima tensione del pannello totalmente scollegato. Viene letta dall'ADC e compensata termicamente.</li>
+            <li><strong>Vmp (Tensione Picco):</strong> Tensione stimata di massima potenza. Nel codice vale <span class="formula">Vmp = Voc * 0.8</span>. <em>Nel reale:</em> È il punto di lavoro con massimo rendimento.</li>
+            <li><strong>Corrente (I):</strong> Trovata applicando la Legge di Ohm: <span class="formula">I = Vmp / R</span>.</li>
+            <li><strong>Potenza (P):</strong> Energia istantanea generata: <span class="formula">P = Vmp * I</span> (ovvero <span class="formula">Vmp² / R</span>).</li>
+            <li><strong>Energia (E):</strong> Somma cumulativa della potenza prodotta nel tempo: <span class="formula">Wh = W * ore</span>.</li>
+          </ul>
+        </div>
+      </details>
+
+      <details class="edu-item">
+        <summary class="edu-summary">🔌 Carico Variabile & MPPT</summary>
+        <div class="edu-content">
+          <p><strong>Carico Resistivo:</strong> Lo slider simula una manopola fisica (un reostato). Variando la resistenza <span class="formula">R</span> da 1 a 50 Ohm, cambia istantaneamente il denominatore della Legge di Ohm. Abbassando la resistenza la corrente sale!</p>
+          <p><strong>Inseguimento MPPT:</strong> Negli impianti reali il punto di lavoro ottimale cambia continuamente. Serve un computer di bordo (regolatore MPPT) per forzare il pannello a lavorare sempre alla sua <span class="formula">Vmp</span> ideale. Questo software simula un MPPT perfetto, assumendo che il pannello si trovi costantemente bloccato sulla sua cresta ottimale di produzione.</p>
+        </div>
+      </details>
+
+      <details class="edu-item">
+        <summary class="edu-summary">⚠️ Sicurezza Elettrica</summary>
+        <div class="edu-content">
+          <p><strong>Il Modello Didattico:</strong> Lavora in totale sicurezza (tensione SELV). I pin dell'ESP32 gestiscono appena <span class="formula">3.3V</span> e le tensioni simulate si fermano a circa <span class="formula">18-22V</span>, totalmente innocue per l'uomo.</p>
+          <div class="safe-box">
+            <p style="color:#c0392b; font-weight:700; margin-bottom:4px;">⚡ ATTENZIONE ALL'IMPIANTO REALE:</p>
+            <p style="font-size:11px; margin:0;">I moduli sui tetti veri sono connessi in serie (stringhe) per raggiungere tensioni continue elevate, da <strong>400V a oltre 1000V DC</strong>! La Corrente Continua ad alta tensione è letale: provoca l'impossibilità di staccarsi dal conduttore (tetania muscolare) e genera pericolosissimi archi elettrici capaci di causare incendi. Richiede tassativamente isolamenti speciali, sezionatori dedicati e l'intervento di tecnici abilitati (PES/PAV) muniti di appositi DPI.</p>
+          </div>
+        </div>
+      </details>
+
+      <details class="edu-item">
+        <summary class="edu-summary">🌐 Cloud IoT & ThingSpeak</summary>
+        <div class="edu-content">
+          <p>L'ESP32 agisce come un nodo IoT (Internet of Things). Ogni 20 secondi trasmette le 8 grandezze fisiche a un server mondiale centralizzato chiamato <strong>ThingSpeak</strong> tramite richieste HTTP standard.</p>
+          <p>Il canale pubblico di raccolta dati dell'Istituto Casanova è il numero <strong>3397574</strong> ed è monitorabile pubblicamente da qualsiasi browser al seguente indirizzo:</p>
+          <p style="margin-top:6px;"><a href="https://thingspeak.com/channels/3397574" target="_blank" class="link-ts">thingspeak.com/channels/3397574</a></p>
+        </div>
+      </details>
+    </div>
+  </div>
+
   <div class="app">
     
-    <!-- HEADER -->
+    <!-- HEADER CON PULSANTE HAMBURGER E TITOLO SPOSTATO A DESTRA -->
     <div class="app-header">
-      <div>
-        <h1 class="app-title">PV Monitoring</h1>
-        <div class="app-subtitle">Ist. Casanova • Mobile Edition</div>
+      <div class="header-left">
+        <button class="menu-btn" id="openMenuBtn">☰</button> <!-- Le 3 liniette orizzontali -->
+        <div>
+          <h1 class="app-title">PV Monitoring</h1>
+          <div class="app-subtitle">Ist. Casanova • Mobile Edition</div>
+        </div>
       </div>
       <div class="badge" id="wifiBadge">TS CONNECTING</div>
     </div>
@@ -184,57 +334,24 @@
       <div class="chart-box"><canvas id="powerChart"></canvas></div>
     </div>
 
-    <!-- HUB DIDATTICO & MANUALE STUDENTE (MENU A SCOMPARSA COMPATTO) -->
-    <div class="edu-card">
-      <div class="edu-header">📘 Hub Didattico & Teoria</div>
-      
-      <details class="edu-item">
-        <summary class="edu-summary">📊 Grandezze & Formule (Fisico vs Reale)</summary>
-        <div class="edu-content">
-          <ul>
-            <li><strong>Temp e Umidità:</strong> Letti dal sensore DHT11. <em>Nel reale:</em> All'aumentare del calore dei moduli, la loro efficienza in tensione si riduce.</li>
-            <li><strong>Irraggiamento:</strong> Rilevato da fotoresistenza LDR (0-100%). <em>Nel reale:</em> La luce determina direttamente la corrente prodotta.</li>
-            <li><strong>Voc (Tensione a vuoto):</strong> Massima tensione del pannello scollegato. Calcolata dall'ADC e compensata termicamente.</li>
-            <li><strong>Vmp (Tensione Picco):</strong> Tensione stimata di massima potenza. Nel codice vale <span class="formula">Vmp = Voc * 0.8</span>. <em>Nel reale:</em> È il punto esatto di massimo rendimento.</li>
-            <li><strong>Corrente (I):</strong> Trovata applicando la Legge di Ohm: <span class="formula">I = Vmp / R</span>.</li>
-            <li><strong>Potenza (P):</strong> Energia istantanea generata: <span class="formula">P = Vmp * I</span> (ovvero <span class="formula">Vmp² / R</span>).</li>
-            <li><strong>Energia (E):</strong> Somma cumulativa della potenza nel tempo: <span class="formula">Wh = W * ore</span>.</li>
-          </ul>
-        </div>
-      </details>
-
-      <details class="edu-item">
-        <summary class="edu-summary">🔌 Carico Variabile & Simulazione MPPT</summary>
-        <div class="edu-content">
-          <p><strong>Carico Resistivo:</strong> Lo slider simula una manopola fisica (un reostato). Variando la resistenza <span class="formula">R</span> da 1 a 50 Ohm, cambia istantaneamente il denominatore della Legge di Ohm. Più abbassi la resistenza, più la corrente sale!</p>
-          <p><strong>Inseguimento MPPT:</strong> Negli impianti reali il punto di lavoro cambia continuamente e serve un computer di bordo (regolatore MPPT) per forzare il pannello a erogare sempre alla sua <span class="formula">Vmp</span> ideale. Questo software simula un MPPT perfetto, ipotizzando che il pannello si trovi costantemente bloccato sulla sua cresta ottimale di produzione.</p>
-        </div>
-      </details>
-
-      <details class="edu-item">
-        <summary class="edu-summary">⚠️ Sicurezza Elettrica: Avvisi Importanti</summary>
-        <div class="edu-content">
-          <p><strong>Il Modello Didattico:</strong> Lavora in totale sicurezza (tensione SELV). I pin dell'ESP32 gestiscono appena <span class="formula">3.3V</span> e le tensioni simulate del pannello si fermano a circa <span class="formula'>18-22V</span>, innocue per il corpo umano.</p>
-          <div class="safe-box">
-            <p style="color:#c0392b; font-weight:700; margin-bottom:2px;">⚡ ATTENZIONE ALL'IMPIANTO REALE:</p>
-            <p style="font-size:10px; margin:0;">I moduli sui tetti veri sono connessi in serie (stringhe) per raggiungere tensioni continue elevate, da <strong>400V a oltre 1000V DC</strong>! La Corrente Continua ad alta tensione è letale: provoca l'impossibilità di staccarsi dal conduttore (tetania muscolare) e genera pericolosissimi archi elettrici capaci di causare incendi. Richiede tassativamente isolamenti speciali, sezionatori dedicati e l'intervento di tecnici abilitati (PES/PAV) muniti di appositi DPI.</p>
-          </div>
-        </div>
-      </details>
-
-      <details class="edu-item">
-        <summary class="edu-summary">🌐 Cloud IoT & ThingSpeak</summary>
-        <div class="edu-content">
-          <p>L'ESP32 è programmato per agire come un nodo IoT (Internet of Things). Ogni 20 secondi trasmette le 8 grandezze fisiche a un server mondiale centralizzato chiamato <strong>ThingSpeak</strong> tramite richieste HTTP standard.</p>
-          <p>Il canale pubblico di raccolta dati dell'Istituto Casanova è il numero <strong>3397574</strong> ed è monitorabile da qualsiasi parte del mondo al seguente link web:</p>
-          <p style="margin-top:4px;"><a href="https://thingspeak.com/channels/3397574" target="_blank" class="link-ts">thingspeak.com/channels/3397574</a></p>
-        </div>
-      </details>
-    </div>
-
     <script>
       let currentREquiv = 10.0;
       let globalFeeds = [];
+
+      // GESTIONE APERTURA/CHIUSURA MENU SIDEBAR
+      const openMenuBtn = document.getElementById('openMenuBtn');
+      const closeMenuBtn = document.getElementById('closeMenuBtn');
+      const sideMenu = document.getElementById('sideMenu');
+      const menuBackdrop = document.getElementById('menuBackdrop');
+
+      function toggleMenu() {
+        sideMenu.classList.toggle('open');
+        menuBackdrop.classList.toggle('open');
+      }
+
+      openMenuBtn.addEventListener('click', toggleMenu);
+      closeMenuBtn.addEventListener('click', toggleMenu);
+      menuBackdrop.addEventListener('click', toggleMenu);
 
       function setGauge(id, val, min, max) {
         let el = document.getElementById(id);
