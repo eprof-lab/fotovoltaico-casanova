@@ -72,8 +72,27 @@
     }
 
     /* GRAFICO */
-    .chart-card { background: #fff; border-radius: 12px; padding: 10px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+    .chart-card { background: #fff; border-radius: 12px; padding: 10px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); margin-bottom: 8px; }
     .chart-box { height: 180px; }
+
+    /* HUB DIDATTICO (MENU A SCOMPARSA ACCORDION) */
+    .edu-card { background: #fff; border-radius: 12px; padding: 10px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); margin-bottom: 8px; border-top: 4px solid #1877f2; }
+    .edu-header { font-size: 12px; font-weight: 800; color: #1877f2; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.03em; display: flex; align-items: center; gap: 4px; }
+    .edu-item { border: 1px solid #e4e6eb; border-radius: 8px; margin-bottom: 6px; overflow: hidden; background: #f8f9fa; }
+    .edu-item[open] { background: #fff; border-color: #bcd4f5; }
+    .edu-summary { font-size: 11px; font-weight: 700; padding: 8px 10px; color: #1c1e21; cursor: pointer; user-select: none; list-style: none; display: flex; justify-content: space-between; align-items: center; }
+    .edu-item[open] .edu-summary { background: #e7f3ff; color: #1877f2; border-bottom: 1px solid #bcd4f5; }
+    .edu-summary::after { content: '▼'; font-size: 8px; color: #8a8d91; transition: transform 0.2s; }
+    .edu-item[open] .edu-summary::after { transform: rotate(180deg); color: #1877f2; }
+    .edu-content { padding: 10px; font-size: 10.5px; color: #4e5156; line-height: 1.4; }
+    .edu-content p { margin: 0 0 6px 0; }
+    .edu-content p:last-child { margin-bottom: 0; }
+    .edu-content ul { margin: 4px 0; padding-left: 16px; }
+    .edu-content li { margin-bottom: 4px; }
+    .formula { font-family: 'Times New Roman', serif; font-style: italic; font-weight: bold; color: #d35400; background: #fdf2e9; padding: 1px 4px; border-radius: 4px; font-size: 10.5px; }
+    .safe-box { background: #fdf2f2; border-left: 3px solid #e74c3c; padding: 6px 8px; border-radius: 0 6px 6px 0; margin-top: 4px; }
+    .link-ts { color: #1877f2; text-decoration: none; font-weight: 600; word-break: break-all; }
+    .link-ts:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
@@ -143,11 +162,11 @@
         <span>Regolazione Carico Resistivo</span>
         <span id="rVal" class="slider-value">10.0 Ω</span>
       </div>
-      <input type="range" id="rSlider" min="5.0" max="50.0" step="1.0" value="10.0" class="range-input">
+      <input type="range" id="rSlider" min="1.0" max="50.0" step="0.5" value="10.0" class="range-input">
       <div class="note">Modificando la resistenza variano istantaneamente i dati storici e correnti.</div>
     </div>
 
-    <!-- RIQUADRO CORRENTE LIVE (SPOSTATO SOTTO LO SLIDER) -->
+    <!-- RIQUADRO CORRENTE LIVE (AMP-METER) -->
     <div class="current-card">
       <div class="current-highlight-box">
         <div class="current-header">
@@ -163,6 +182,54 @@
     <!-- GRAFICO COMPLETO -->
     <div class="chart-card">
       <div class="chart-box"><canvas id="powerChart"></canvas></div>
+    </div>
+
+    <!-- HUB DIDATTICO & MANUALE STUDENTE (MENU A SCOMPARSA COMPATTO) -->
+    <div class="edu-card">
+      <div class="edu-header">📘 Hub Didattico & Teoria</div>
+      
+      <details class="edu-item">
+        <summary class="edu-summary">📊 Grandezze & Formule (Fisico vs Reale)</summary>
+        <div class="edu-content">
+          <ul>
+            <li><strong>Temp e Umidità:</strong> Letti dal sensore DHT11. <em>Nel reale:</em> All'aumentare del calore dei moduli, la loro efficienza in tensione si riduce.</li>
+            <li><strong>Irraggiamento:</strong> Rilevato da fotoresistenza LDR (0-100%). <em>Nel reale:</em> La luce determina direttamente la corrente prodotta.</li>
+            <li><strong>Voc (Tensione a vuoto):</strong> Massima tensione del pannello scollegato. Calcolata dall'ADC e compensata termicamente.</li>
+            <li><strong>Vmp (Tensione Picco):</strong> Tensione stimata di massima potenza. Nel codice vale <span class="formula">Vmp = Voc * 0.8</span>. <em>Nel reale:</em> È il punto esatto di massimo rendimento.</li>
+            <li><strong>Corrente (I):</strong> Trovata applicando la Legge di Ohm: <span class="formula">I = Vmp / R</span>.</li>
+            <li><strong>Potenza (P):</strong> Energia istantanea generata: <span class="formula">P = Vmp * I</span> (ovvero <span class="formula">Vmp² / R</span>).</li>
+            <li><strong>Energia (E):</strong> Somma cumulativa della potenza nel tempo: <span class="formula">Wh = W * ore</span>.</li>
+          </ul>
+        </div>
+      </details>
+
+      <details class="edu-item">
+        <summary class="edu-summary">🔌 Carico Variabile & Simulazione MPPT</summary>
+        <div class="edu-content">
+          <p><strong>Carico Resistivo:</strong> Lo slider simula una manopola fisica (un reostato). Variando la resistenza <span class="formula">R</span> da 1 a 50 Ohm, cambia istantaneamente il denominatore della Legge di Ohm. Più abbassi la resistenza, più la corrente sale!</p>
+          <p><strong>Inseguimento MPPT:</strong> Negli impianti reali il punto di lavoro cambia continuamente e serve un computer di bordo (regolatore MPPT) per forzare il pannello a erogare sempre alla sua <span class="formula">Vmp</span> ideale. Questo software simula un MPPT perfetto, ipotizzando che il pannello si trovi costantemente bloccato sulla sua cresta ottimale di produzione.</p>
+        </div>
+      </details>
+
+      <details class="edu-item">
+        <summary class="edu-summary">⚠️ Sicurezza Elettrica: Avvisi Importanti</summary>
+        <div class="edu-content">
+          <p><strong>Il Modello Didattico:</strong> Lavora in totale sicurezza (tensione SELV). I pin dell'ESP32 gestiscono appena <span class="formula">3.3V</span> e le tensioni simulate del pannello si fermano a circa <span class="formula'>18-22V</span>, innocue per il corpo umano.</p>
+          <div class="safe-box">
+            <p style="color:#c0392b; font-weight:700; margin-bottom:2px;">⚡ ATTENZIONE ALL'IMPIANTO REALE:</p>
+            <p style="font-size:10px; margin:0;">I moduli sui tetti veri sono connessi in serie (stringhe) per raggiungere tensioni continue elevate, da <strong>400V a oltre 1000V DC</strong>! La Corrente Continua ad alta tensione è letale: provoca l'impossibilità di staccarsi dal conduttore (tetania muscolare) e genera pericolosissimi archi elettrici capaci di causare incendi. Richiede tassativamente isolamenti speciali, sezionatori dedicati e l'intervento di tecnici abilitati (PES/PAV) muniti di appositi DPI.</p>
+          </div>
+        </div>
+      </details>
+
+      <details class="edu-item">
+        <summary class="edu-summary">🌐 Cloud IoT & ThingSpeak</summary>
+        <div class="edu-content">
+          <p>L'ESP32 è programmato per agire come un nodo IoT (Internet of Things). Ogni 20 secondi trasmette le 8 grandezze fisiche a un server mondiale centralizzato chiamato <strong>ThingSpeak</strong> tramite richieste HTTP standard.</p>
+          <p>Il canale pubblico di raccolta dati dell'Istituto Casanova è il numero <strong>3397574</strong> ed è monitorabile da qualsiasi parte del mondo al seguente link web:</p>
+          <p style="margin-top:4px;"><a href="https://thingspeak.com/channels/3397574" target="_blank" class="link-ts">thingspeak.com/channels/3397574</a></p>
+        </div>
+      </details>
     </div>
 
     <script>
@@ -281,7 +348,7 @@
         processAndRenderData();
       });
 
-      setInterval(updateData, 5000);
+      setInterval(updateData, 15000);
       updateData();
     </script>
   </div>
